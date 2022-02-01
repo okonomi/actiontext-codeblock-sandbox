@@ -3,9 +3,14 @@ import "@hotwired/turbo-rails"
 import "controllers"
 import "trix"
 import "@rails/actiontext"
-
-
 import Trix from "trix"
+import hljs from "highlight.js"
+
+document.addEventListener('DOMContentLoaded', (event) => {
+  document.querySelectorAll('pre code').forEach((el) => {
+    hljs.highlightElement(el);
+  });
+});
 
 const lang = Trix.config.lang
 Trix.config.toolbar = {
