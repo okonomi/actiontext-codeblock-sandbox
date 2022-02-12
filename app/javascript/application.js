@@ -12,6 +12,50 @@ document.addEventListener('turbo:load', (event) => {
   });
 });
 
+document.addEventListener('turbo:load', (event) => {
+  const button = document.getElementById("code_block_button");
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const content = prompt("input code");
+
+    const editor = document.getElementById("post_content").editor;
+    const attachment = new Trix.Attachment({
+      content: `<pre>${content}</pre>`
+    });
+    editor.insertAttachment(attachment);
+  })
+});
+
+document.addEventListener('trix-initialize', (event) => {
+  // const editor = event.target.editor;
+
+  // const attachment = new Trix.Attachment({
+  //   content: `<pre>p [:a, :b]</pre>`
+  // });
+  // editor.insertAttachment(attachment);
+
+  // const attachment = editor.getDocument().getAttachments()[0]
+  // // console.log(attachment)
+  // attachment.setAttributes({ content: `<pre contenteditable>p [:a, :b, :c, :d]</pre>` })
+
+  // event.target.getElementsByTagName("pre")[0].addEventListener("blur", (event) => {
+  //   console.log("blur")
+  // //   const attachment = editor.getDocument().getAttachments()[0]
+  // //   console.log(event.target.innerHTML);
+  //   attachment.setAttributes({ content: event.target.outerHTML })
+  // })
+
+  // const code = `
+  // p [:a, :b]
+  // `
+
+  // const attachment = new Trix.Attachment({
+  //   content: `<pre><code class="language-ruby hljs">${hljs.highlight(code, { language: "ruby" }).value}</code></pre>`
+  // });
+  // editor.insertAttachment(attachment);
+});
+
 const lang = Trix.config.lang
 Trix.config.toolbar = {
   getDefaultHTML: () => (
