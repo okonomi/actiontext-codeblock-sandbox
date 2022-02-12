@@ -13,35 +13,39 @@ document.addEventListener('turbo:load', (event) => {
   });
 });
 
-document.addEventListener('turbo:load', (event) => {
-  const button = document.getElementById("code_block_button");
-  button?.addEventListener("click", (e) => {
-    e.preventDefault();
 
-    const language = prompt("input language");
-    const content = prompt("input code");
+let editor;
 
-    redaxios.post("/code_blocks", { language, content }, {
-      headers: {
-        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-      }
-    })
-      .then((res) => {
-        const editor = document.getElementById("post_content").editor;
-        const attachment = new Trix.Attachment({
-          sgid: res.data.sgid,
-          content: res.data.content
-        });
-        editor.insertAttachment(attachment);
-      })
-      .catch((err) => {
-        console.log("error", err)
-      })
+function insertCodeBlock() {
+  const language = prompt("input language");
+  const content = prompt("input code");
+
+  redaxios.post("/code_blocks", { language, content }, {
+    headers: {
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
   })
-});
+    .then((res) => {
+      const attachment = new Trix.Attachment({
+        sgid: res.data.sgid,
+        content: res.data.content
+      });
+      editor.insertAttachment(attachment);
+    })
+    .catch((err) => {
+      console.log("error", err)
+    })
+}
 
 document.addEventListener('trix-initialize', (event) => {
-  // const editor = event.target.editor;
+  editor = event.target.editor;
+
+  const button = document.getElementById("code_block_button");
+  button.addEventListener("click", (e) => {
+    e.preventDefault();
+    insertCodeBlock();
+  })
+
 
   // const attachment = new Trix.Attachment({
   //   content: `<pre>p [:a, :b]</pre>`
