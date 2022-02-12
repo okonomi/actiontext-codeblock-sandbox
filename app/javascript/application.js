@@ -5,6 +5,7 @@ import "trix"
 import "@rails/actiontext"
 import Trix from "trix"
 import hljs from "highlight.js"
+import redaxios from "redaxios"
 
 document.addEventListener('turbo:load', (event) => {
   document.querySelectorAll('pre code').forEach((el) => {
@@ -14,16 +15,28 @@ document.addEventListener('turbo:load', (event) => {
 
 document.addEventListener('turbo:load', (event) => {
   const button = document.getElementById("code_block_button");
-  button.addEventListener("click", (e) => {
+  button?.addEventListener("click", (e) => {
     e.preventDefault();
 
+    const language = prompt("input language");
     const content = prompt("input code");
 
-    const editor = document.getElementById("post_content").editor;
-    const attachment = new Trix.Attachment({
-      content: `<pre>${content}</pre>`
-    });
-    editor.insertAttachment(attachment);
+    redaxios.post("/code_blocks", { language, content }, {
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    })
+      .then((res) => {
+        const editor = document.getElementById("post_content").editor;
+        const attachment = new Trix.Attachment({
+          sgid: res.data.sgid,
+          content: `<pre>${content}</pre>`
+        });
+        editor.insertAttachment(attachment);
+      })
+      .catch((err) => {
+        console.log("error", err)
+      })
   })
 });
 
