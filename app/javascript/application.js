@@ -30,7 +30,7 @@ document.addEventListener('turbo:load', (event) => {
         const editor = document.getElementById("post_content").editor;
         const attachment = new Trix.Attachment({
           sgid: res.data.sgid,
-          content: `<pre>${content}</pre>`
+          content: res.data.content
         });
         editor.insertAttachment(attachment);
       })
