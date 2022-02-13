@@ -37,15 +37,45 @@ function insertCodeBlock() {
     })
 }
 
+function updateCodeBlock() {
+  const trixId = prompt("trix id");
+  const attachment = editor.getDocument().getAttachmentById(parseInt(trixId));
+
+  const content = prompt("upate code", stripHTML(attachment.getContent()));
+
+  redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, { content }, {
+    headers: {
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+    }
+  })
+    .then((res) => {
+      attachment.setAttributes({
+        content: res.data.content
+      });
+    })
+    .catch((err) => {
+      console.log("error", err.body.toString())
+    })
+}
+
+function stripHTML(str) {
+  return str.replace(/(<([^>]+)>)/gi, "").trim();
+}
+
 document.addEventListener('trix-initialize', (event) => {
   editor = event.target.editor;
 
-  const button = document.getElementById("code_block_button");
-  button.addEventListener("click", (e) => {
+  const btnInsert = document.getElementById("btn-code_block-insert");
+  btnInsert.addEventListener("click", (e) => {
     e.preventDefault();
     insertCodeBlock();
   })
 
+  const btnUpdate = document.getElementById("btn-code_block-update");
+  btnUpdate.addEventListener("click", (e) => {
+    e.preventDefault();
+    updateCodeBlock();
+  })
 
   // const attachment = new Trix.Attachment({
   //   content: `<pre>p [:a, :b]</pre>`
