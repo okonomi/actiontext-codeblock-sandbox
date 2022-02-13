@@ -6,6 +6,7 @@ import "@rails/actiontext"
 import Trix from "trix"
 import hljs from "highlight.js"
 import redaxios from "redaxios"
+import { unescape } from "html-escaper"
 
 document.addEventListener('turbo:load', (event) => {
   document.querySelectorAll('pre code').forEach((el) => {
@@ -43,7 +44,7 @@ function updateCodeBlock() {
   const attachment = editor.getDocument().getAttachmentById(parseInt(trixId));
 
   const language = prompt("language", attachment.getAttribute("language"));
-  const content = prompt("upate code", stripHTML(attachment.getContent()));
+  const content = prompt("upate code", stripHTML(unescape(attachment.getContent())));
 
   redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, { language, content }, {
     headers: {
