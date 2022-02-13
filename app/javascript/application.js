@@ -28,6 +28,7 @@ function insertCodeBlock() {
     .then((res) => {
       const attachment = new Trix.Attachment({
         sgid: res.data.sgid,
+        language: res.data.language,
         content: res.data.content
       });
       editor.insertAttachment(attachment);
@@ -41,15 +42,17 @@ function updateCodeBlock() {
   const trixId = prompt("trix id");
   const attachment = editor.getDocument().getAttachmentById(parseInt(trixId));
 
+  const language = prompt("language", attachment.getAttribute("language"));
   const content = prompt("upate code", stripHTML(attachment.getContent()));
 
-  redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, { content }, {
+  redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, { language, content }, {
     headers: {
       'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
     }
   })
     .then((res) => {
       attachment.setAttributes({
+        language: res.data.language,
         content: res.data.content
       });
     })
