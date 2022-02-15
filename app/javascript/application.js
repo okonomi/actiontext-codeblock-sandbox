@@ -21,22 +21,11 @@ function insertCodeBlock() {
   const language = prompt("input language");
   const content = prompt("input code");
 
-  redaxios.post("/code_blocks", { language, content }, {
-    headers: {
-      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-    }
-  })
-    .then((res) => {
-      const attachment = new Trix.Attachment({
-        sgid: res.data.sgid,
-        language: res.data.language,
-        content: res.data.content
-      });
-      editor.insertAttachment(attachment);
-    })
-    .catch((err) => {
-      console.log("error", err)
-    })
+  const attachment = new Trix.Attachment({
+    language: language,
+    content: `<pre>${content}</pre>`
+  });
+  editor.insertAttachment(attachment);
 }
 
 function updateCodeBlock() {
@@ -46,20 +35,10 @@ function updateCodeBlock() {
   const language = prompt("language", attachment.getAttribute("language"));
   const content = prompt("upate code", stripHTML(unescape(attachment.getContent())));
 
-  redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, { language, content }, {
-    headers: {
-      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-    }
-  })
-    .then((res) => {
-      attachment.setAttributes({
-        language: res.data.language,
-        content: res.data.content
-      });
-    })
-    .catch((err) => {
-      console.log("error", err.body.toString())
-    })
+  attachment.setAttributes({
+    language: language,
+    content: `<pre>${content}</pre>`
+  });
 }
 
 function stripHTML(str) {
@@ -81,30 +60,48 @@ document.addEventListener('trix-initialize', (event) => {
     updateCodeBlock();
   })
 
-  // const attachment = new Trix.Attachment({
-  //   content: `<pre>p [:a, :b]</pre>`
-  // });
-  // editor.insertAttachment(attachment);
+  const form = event.target.closest("form");
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-  // const attachment = editor.getDocument().getAttachments()[0]
-  // // console.log(attachment)
-  // attachment.setAttributes({ content: `<pre contenteditable>p [:a, :b, :c, :d]</pre>` })
+    const attachments = editor.getDocument().getAttachments();
 
-  // event.target.getElementsByTagName("pre")[0].addEventListener("blur", (event) => {
-  //   console.log("blur")
-  // //   const attachment = editor.getDocument().getAttachments()[0]
-  // //   console.log(event.target.innerHTML);
-  //   attachment.setAttributes({ content: event.target.outerHTML })
-  // })
+    Promise.all(
+      attachments.map((attachment) => {
+        if (attachment.getAttribute("sgid")) {
+          return redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, {
+            language: attachment.getAttribute("language"),
+            content: stripHTML(unescape(attachment.getContent()))
+          }, {
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+          })
+        } else {
+          return redaxios.post("/code_blocks", {
+            language: attachment.getAttribute("language"),
+            content: stripHTML(unescape(attachment.getContent())),
+            trix_id: attachment.id
+          }, {
+            headers: {
+              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+            }
+          })
+        }
+      })
+    ).then((result) => {
+      result.forEach((ret) => {
+        if (ret.status == 201) {
+          const attachment = editor.getDocument().getAttachmentById(ret.data.trix_id)
+          attachment.setAttributes({
+            sgid: ret.data.sgid
+          })
+        }
+      })
 
-  // const code = `
-  // p [:a, :b]
-  // `
-
-  // const attachment = new Trix.Attachment({
-  //   content: `<pre><code class="language-ruby hljs">${hljs.highlight(code, { language: "ruby" }).value}</code></pre>`
-  // });
-  // editor.insertAttachment(attachment);
+      e.target.submit();
+    })
+  });
 });
 
 const lang = Trix.config.lang
