@@ -41,6 +41,46 @@ function updateCodeBlock() {
   });
 }
 
+function saveCodeBlocks(cb) {
+  const attachments = editor.getDocument().getAttachments();
+
+  Promise.all(
+    attachments.map((attachment) => {
+      if (attachment.getAttribute("sgid")) {
+        return redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, {
+          language: attachment.getAttribute("language"),
+          content: stripHTML(unescape(attachment.getContent()))
+        }, {
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          }
+        })
+      } else {
+        return redaxios.post("/code_blocks", {
+          language: attachment.getAttribute("language"),
+          content: stripHTML(unescape(attachment.getContent())),
+          trix_id: attachment.id
+        }, {
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+          }
+        })
+      }
+    })
+  ).then((results) => {
+    results.forEach((result) => {
+      if (result.status == 201) {
+        const attachment = editor.getDocument().getAttachmentById(result.data.trix_id)
+        attachment.setAttributes({
+          sgid: result.data.sgid
+        })
+      }
+    })
+
+    cb()
+  })
+}
+
 function stripHTML(str) {
   return str.replace(/(<([^>]+)>)/gi, "").trim();
 }
@@ -64,43 +104,9 @@ document.addEventListener('trix-initialize', (event) => {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
-    const attachments = editor.getDocument().getAttachments();
-
-    Promise.all(
-      attachments.map((attachment) => {
-        if (attachment.getAttribute("sgid")) {
-          return redaxios.put(`/code_blocks/${attachment.getAttribute("sgid")}`, {
-            language: attachment.getAttribute("language"),
-            content: stripHTML(unescape(attachment.getContent()))
-          }, {
-            headers: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            }
-          })
-        } else {
-          return redaxios.post("/code_blocks", {
-            language: attachment.getAttribute("language"),
-            content: stripHTML(unescape(attachment.getContent())),
-            trix_id: attachment.id
-          }, {
-            headers: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            }
-          })
-        }
-      })
-    ).then((result) => {
-      result.forEach((ret) => {
-        if (ret.status == 201) {
-          const attachment = editor.getDocument().getAttachmentById(ret.data.trix_id)
-          attachment.setAttributes({
-            sgid: ret.data.sgid
-          })
-        }
-      })
-
+    saveCodeBlocks(() => {
       e.target.submit();
-    })
+    });
   });
 });
 
