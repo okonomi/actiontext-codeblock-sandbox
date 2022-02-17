@@ -4,7 +4,6 @@ class CodeBlocksController < ApplicationController
   def create
     @code_block = CodeBlock.create!(code_block_params)
     render json: {
-      trix_id: params[:trix_id],
       sgid: @code_block.attachable_sgid,
       language: @code_block.language,
       content: render_to_string(

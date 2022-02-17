@@ -53,28 +53,27 @@ function saveCodeBlocks(cb) {
         }, {
           headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          }
+          },
+          trixId: attachment.id
         })
       } else {
         return redaxios.post("/code_blocks", {
           language: attachment.getAttribute("language"),
-          content: stripHTML(unescape(attachment.getContent())),
-          trix_id: attachment.id
+          content: stripHTML(unescape(attachment.getContent()))
         }, {
           headers: {
             'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          }
+          },
+          trixId: attachment.id
         })
       }
     })
   ).then((results) => {
     results.forEach((result) => {
-      if (result.status == 201) {
-        const attachment = editor.getDocument().getAttachmentById(result.data.trix_id)
-        attachment.setAttributes({
-          sgid: result.data.sgid
-        })
-      }
+      const attachment = editor.getDocument().getAttachmentById(result.config.trixId)
+      attachment.setAttributes({
+        sgid: result.data.sgid
+      })
     })
 
     cb()
