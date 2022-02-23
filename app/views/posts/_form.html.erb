@@ -20,6 +20,20 @@
     <%= form.label :content, style: "display: block" %>
     <button id="btn-code_block-insert">insert code block</button>
     <button id="btn-code_block-update">update code block</button>
+    <div id="form-codeb_lock-update">
+      <div>
+        <label>TrixId</label>
+        <input type="text" name="trix_id" id="code_block-trix_id">
+      </div>
+      <div>
+        <label>Language</label>
+        <input type="text" name="language" id="code_block-language">
+      </div>
+      <div>
+        <textarea name="content" id="code_block-content"></textarea>
+      </div>
+      <button id="btn-code_block-update2">update code block</button>
+    </div>
     <%= form.rich_text_area :content %>
   </div>
 
