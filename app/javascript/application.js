@@ -123,16 +123,23 @@ document.addEventListener('trix-initialize', (event) => {
   btnUpdate2.addEventListener("click", (e) => {
     e.preventDefault();
 
-    const trixId = document.getElementById("code_block-trix_id").value;
+    const trixId = parseInt(document.getElementById("code_block-trix_id").value);
     const language = document.getElementById("code_block-language").value;
     const content = document.getElementById("code_block-content").value;
 
-    const attachment = editor.getDocument().getAttachmentById(parseInt(trixId));
-
-    attachment.setAttributes({
-      language: language,
-      content: `<pre>${content}</pre>`
-    });
+    if (trixId) {
+      const attachment = editor.getDocument().getAttachmentById(trixId);
+      attachment.setAttributes({
+        language: language,
+        content: `<pre>${content}</pre>`
+      });
+    } else {
+      const attachment = new Trix.Attachment({
+        language: language,
+        content: `<pre>${content}</pre>`
+      });
+      editor.insertAttachment(attachment);
+    }
   })
 });
 
