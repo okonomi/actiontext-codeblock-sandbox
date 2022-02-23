@@ -108,6 +108,17 @@ document.addEventListener('trix-initialize', (event) => {
     });
   });
 
+  const inputTrixId = document.getElementById("code_block-trix_id");
+  inputTrixId.addEventListener("blur", (e) => {
+    const trixId = parseInt(e.target.value);
+    if (!trixId) {
+      return;
+    }
+    const attachment = editor.getDocument().getAttachmentById(trixId);
+    document.getElementById("code_block-language").value = attachment.getAttribute("language");
+    document.getElementById("code_block-content").value = stripHTML(unescape(attachment.getContent()));
+  })
+
   const btnUpdate2 = document.getElementById("btn-code_block-update2");
   btnUpdate2.addEventListener("click", (e) => {
     e.preventDefault();
