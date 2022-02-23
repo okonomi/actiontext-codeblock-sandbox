@@ -17,30 +17,6 @@ document.addEventListener('turbo:load', (event) => {
 
 let editor;
 
-function insertCodeBlock() {
-  const language = prompt("input language");
-  const content = prompt("input code");
-
-  const attachment = new Trix.Attachment({
-    language: language,
-    content: `<pre>${content}</pre>`
-  });
-  editor.insertAttachment(attachment);
-}
-
-function updateCodeBlock() {
-  const trixId = prompt("trix id");
-  const attachment = editor.getDocument().getAttachmentById(parseInt(trixId));
-
-  const language = prompt("language", attachment.getAttribute("language"));
-  const content = prompt("upate code", stripHTML(unescape(attachment.getContent())));
-
-  attachment.setAttributes({
-    language: language,
-    content: `<pre>${content}</pre>`
-  });
-}
-
 function saveCodeBlocks(cb) {
   const attachments = editor.getDocument().getAttachments();
 
@@ -87,18 +63,6 @@ function stripHTML(str) {
 document.addEventListener('trix-initialize', (event) => {
   editor = event.target.editor;
 
-  const btnInsert = document.getElementById("btn-code_block-insert");
-  btnInsert.addEventListener("click", (e) => {
-    e.preventDefault();
-    insertCodeBlock();
-  })
-
-  const btnUpdate = document.getElementById("btn-code_block-update");
-  btnUpdate.addEventListener("click", (e) => {
-    e.preventDefault();
-    updateCodeBlock();
-  })
-
   const form = event.target.closest("form");
   form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -119,8 +83,8 @@ document.addEventListener('trix-initialize', (event) => {
     document.getElementById("code_block-content").value = stripHTML(unescape(attachment.getContent()));
   })
 
-  const btnUpdate2 = document.getElementById("btn-code_block-update2");
-  btnUpdate2.addEventListener("click", (e) => {
+  const btnUpdate = document.getElementById("btn-code_block-update");
+  btnUpdate.addEventListener("click", (e) => {
     e.preventDefault();
 
     const trixId = parseInt(document.getElementById("code_block-trix_id").value);
